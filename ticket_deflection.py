@@ -3,12 +3,14 @@ from dotenv import load_dotenv
 from autogen import ConversableAgent
 from typing import List, Dict
 
+# Import system messages
 from system_messages import (
     ORCHESTRATOR_SYSTEM_MESSAGE,
     VPN_SYSTEM_MESSAGE,
     CHANGE_MANAGEMENT_SYSTEM_MESSAGE
 )
 
+# Load environment variables
 load_dotenv()
 
 class AgentSystem:
@@ -47,12 +49,14 @@ class AgentSystem:
     def _create_agents(self):
         """Create all the agents needed for the system."""
         agents = {
+            # Router agent to direct requests to appropriate specialized agents
             "router": ConversableAgent(
                 name="Orchestrator",
                 system_message=ORCHESTRATOR_SYSTEM_MESSAGE,
                 llm_config=self.config["openai"],
             ),
             
+            # User proxy agent that acts as intermediary
             "user_proxy": ConversableAgent(
                 name="User",
                 llm_config=False,
@@ -60,6 +64,7 @@ class AgentSystem:
                 human_input_mode="NEVER"
             ),
             
+            # Approval agent for handling approval requests
             "approval": ConversableAgent(
                 name="Approval Agent",
                 human_input_mode="ALWAYS",
@@ -90,37 +95,53 @@ class AgentSystem:
     
     def _register_agent_functions(self):
         """Register functions with the appropriate agents."""
-        # VPN assistant functions
-        vpn_functions = [
-            (self.check_and_fetch_employee_status, "check_and_fetch_employee_status", 
-             "Check for employee status"),
-            (self.send_approval_request, "send_approval_request", 
-             "Trigger approval request"),
-            (self.update_vpn_table, "update_vpn_table", 
-             "Provide VPN access")
-        ]
-
-        # Change management functions
-        change_management_functions = [
-            (self.get_missing_data, "get_missing_data", 
-             "Ask users for any missing fields/information in the change management request"),
-            (self.create_jira_ticket, "create_jira_ticket", 
-             "Create a JIRA ticket with the right team to execute the change request"),
-            (self.is_deployment_restricted, "is_deployment_restricted", 
-             "Check if the change schedule falls within a restricted window"),
-            (self.send_approval_request_for_change, "send_approval_request_for_change", 
-             "Send approval request to proceed with the change management process")
+        
+        # --- VPN Tool Wrappers ---
+        def check_employee_status(employee_id: str) -> Dict:
+            """Check for employee status in database."""
+            return self.check_and_fetch_employee_status(employee_id)
+        
+        def send_approval(employee_id: str) -> str:
+            """Trigger approval request for VPN access."""
+            return self.send_approval_request(employee_id)
+        
+        def update_vpn(employee_id: str, name: str, department: str) -> bool:
+            """Update the VPN access table."""
+            return self.update_vpn_table(employee_id, name, department)
+        
+        # --- Change Management Tool Wrappers ---
+        def get_missing(missing_fields: str) -> str:
+            """Ask users for any missing fields/information."""
+            return self.get_missing_data(missing_fields)
+        
+        def create_ticket(request: str, team: str) -> str:
+            """Create a JIRA ticket with the right team."""
+            return self.create_jira_ticket(request, team)
+        
+        def check_restriction(scheduled_change_time: str) -> bool:
+            """Check if the change falls within a restricted window."""
+            return self.is_deployment_restricted(scheduled_change_time)
+        
+        def send_change_approval(request_title: str) -> str:
+            """Send approval request for change management."""
+            return self.send_approval_request_for_change(request_title)
+        
+        # Register all functions with their respective agents
+        function_registrations = [
+            # (agent_name, function_name, description, wrapper_function)
+            ("vpn", "check_and_fetch_employee_status", "Check for employee status", check_employee_status),
+            ("vpn", "send_approval_request", "Trigger approval request", send_approval),
+            ("vpn", "update_vpn_table", "Provide VPN access", update_vpn),
+            ("change_management", "get_missing_data", "Ask users for missing information", get_missing),
+            ("change_management", "create_jira_ticket", "Create a JIRA ticket", create_ticket),
+            ("change_management", "is_deployment_restricted", "Check for restricted windows", check_restriction),
+            ("change_management", "send_approval_request_for_change", "Send approval request", send_change_approval),
         ]
         
-        # Register VPN functions
-        for func, name, description in vpn_functions:
-            self.agents["vpn"].register_for_llm(name=name, description=description)(func)
-            self.agents["user_proxy"].register_for_execution(name=name)(func)
-
-        # Register change management functions
-        for func, name, description in change_management_functions:
-            self.agents["change_management"].register_for_llm(name=name, description=description)(func)
-            self.agents["user_proxy"].register_for_execution(name=name)(func)
+        # Register functions for both LLM and execution
+        for agent_name, func_name, description, wrapper_func in function_registrations:
+            self.agents[agent_name].register_for_llm(name=func_name, description=description)(wrapper_func)
+            self.agents["user_proxy"].register_for_execution(name=func_name)(wrapper_func)
     
     # Tool Functions
     def check_and_fetch_employee_status(self, employee_id: str) -> Dict:
@@ -323,25 +344,15 @@ if __name__ == "__main__":
     # Create the agent system
     agent_system = AgentSystem()
     
-    # Example requests to test the system
-    test_requests = [
-        "I need VPN access. Employee ID: 123456",
-        # "I need access to HR portal",
-        # """
-        # {
-        #     "Title": "",
-        #     "Description of Change": "This change involves upgrading the PostgreSQL database from version 12 to version 14 to improve performance and security. The upgrade includes backup of current databases and migration of configurations to the new version.",
-        #     "Impact": "High",
-        #     "Proposed Change Date and Time": "2024-11-05 22:00:00",
-        #     "Rollback Plan": "In case of any issues, the databases will be restored from the backup taken before the upgrade. Configuration files will be reverted to the previous version to ensure minimal downtime. A failover will be performed to the secondary database to resume operations if necessary."
-        # } """
-    ]
-    
+    #request = "I need VPN access. Employee ID: 123456"
+    #request = "I need access to HR portal"
+    request = """
+        {
+            "Title": "",
+            "Description of Change": "This change involves upgrading the PostgreSQL database from version 12 to version 14 to improve performance and security. The upgrade includes backup of current databases and migration of configurations to the new version.",
+            "Impact": "High",
+            "Proposed Change Date and Time": "2024-11-05 22:00:00",
+            "Rollback Plan": "In case of any issues, the databases will be restored from the backup taken before the upgrade. Configuration files will be reverted to the previous version to ensure minimal downtime. A failover will be performed to the secondary database to resume operations if necessary."
+        } """
     # Process each test request
-    for request in test_requests:
-        print("=" * 50)
-        print(f"Request: {request}")
-        print("-" * 50)
-        response = agent_system.process_request(request)
-        print(f"Response: {response}")
-        print("=" * 50)
+    response = agent_system.process_request(request)
