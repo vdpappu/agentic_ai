@@ -10,7 +10,7 @@ or "Routing HUMAN Agent. Completed".
 Do not provide any other information or attempt to solve the user's problem.
 """
 
-vpn_system_message = """
+VPN_SYSTEM_MESSAGE = """
 You are an ITSM Agent expert in solving VPN issues and managing VPN access requests. Your primary task is to handle VPN access requests 
 efficiently and accurately. When a user raises a request for VPN access, follow these steps:
 
