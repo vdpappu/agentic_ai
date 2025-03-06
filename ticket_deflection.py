@@ -67,7 +67,7 @@ class AgentSystem:
             
             # Approval agent for handling approval requests
             "approval": ConversableAgent(
-                name="Approval Agent",
+                name="Approval_Agent",
                 human_input_mode="ALWAYS",
             ),
             
@@ -79,14 +79,14 @@ class AgentSystem:
             
             # VPN assistant for handling VPN access requests
             "vpn": ConversableAgent(
-                name="VPN Assistant",
+                name="VPN_Assistant",
                 system_message=VPN_SYSTEM_MESSAGE,
                 llm_config=self.llm_config,
             ),
             
             # Change management agent for handling change requests
             "change_management": ConversableAgent(
-                name="Change Management Agent",
+                name="Change_Management_Agent",
                 system_message=CHANGE_MANAGEMENT_SYSTEM_MESSAGE,
                 llm_config=self.llm_config,
             ),
