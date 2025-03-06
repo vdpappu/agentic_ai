@@ -15,7 +15,7 @@ load_dotenv()
 
 class AgentSystem:
     def __init__(self):
-        self.config = self._setup_config()
+        self.llm_config = self._setup_config()
         self.agents = self._create_agents()
         self._register_agent_functions()
     
@@ -45,7 +45,7 @@ class AgentSystem:
         # return {
         #     "bedrock": {"config_list": config["bedrock"]},
         #     "openai": {"config_list": config["openai"]}
-        }
+        #}
     
     def _create_agents(self):
         """Create all the agents needed for the system."""
@@ -54,7 +54,7 @@ class AgentSystem:
             "router": ConversableAgent(
                 name="Orchestrator",
                 system_message=ORCHESTRATOR_SYSTEM_MESSAGE,
-                llm_config=self.config["openai"],
+                llm_config=self.llm_config,
             ),
             
             # User proxy agent that acts as intermediary
@@ -81,14 +81,14 @@ class AgentSystem:
             "vpn": ConversableAgent(
                 name="VPN Assistant",
                 system_message=VPN_SYSTEM_MESSAGE,
-                llm_config=self.config["openai"],
+                llm_config=self.llm_config,
             ),
             
             # Change management agent for handling change requests
             "change_management": ConversableAgent(
                 name="Change Management Agent",
                 system_message=CHANGE_MANAGEMENT_SYSTEM_MESSAGE,
-                llm_config=self.config["openai"],
+                llm_config=self.llm_config,
             ),
         }
         
