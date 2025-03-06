@@ -21,29 +21,30 @@ class AgentSystem:
     
     def _setup_config(self):
         """Set up configuration for LLM models."""
-        config = {
-            "bedrock": [{
-                "api_type": "bedrock",
-                "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                "aws_region": "us-west-2",
-                "aws_access_key": os.getenv("AWS_ACCESS_KEY"),
-                "aws_secret_key": os.getenv("AWS_SECRET_KEY"),
-                "price": [0.003, 0.015],
-                "temperature": 0.1,
-                "cache_seed": None,
-            }],
-            "openai": [{
-                "model": "gpt-4o",
-                "api_type": "azure",
-                "api_key": os.getenv("AZURE_OAI_API_KEY"),
-                "base_url": os.getenv("AZURE_OAI_BASE_URL"),
-                "api_version": os.getenv("AZURE_OAI_API_VERSION"),
-            }]
-        }
+        """Replace this with the custom config """
+        # config = {
+        #     "bedrock": [{
+        #         "api_type": "bedrock",
+        #         "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        #         "aws_region": "us-west-2",
+        #         "aws_access_key": os.getenv("AWS_ACCESS_KEY"),
+        #         "aws_secret_key": os.getenv("AWS_SECRET_KEY"),
+        #         "price": [0.003, 0.015],
+        #         "temperature": 0.1,
+        #         "cache_seed": None,
+        #     }],
+        #     "openai": [{
+        #         "model": "gpt-4o",
+        #         "api_type": "azure",
+        #         "api_key": os.getenv("AZURE_OAI_API_KEY"),
+        #         "base_url": os.getenv("AZURE_OAI_BASE_URL"),
+        #         "api_version": os.getenv("AZURE_OAI_API_VERSION"),
+        #     }]
+        # }
         
-        return {
-            "bedrock": {"config_list": config["bedrock"]},
-            "openai": {"config_list": config["openai"]}
+        # return {
+        #     "bedrock": {"config_list": config["bedrock"]},
+        #     "openai": {"config_list": config["openai"]}
         }
     
     def _create_agents(self):
